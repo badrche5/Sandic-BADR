@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Suppression de compte / حذف الحساب — Syndic</title>
+<meta name="robots" content="index,follow">
+<style>
+:root{--bg:#f2f4f9;--fg:#14213d;--muted:#586482;--line:#d8deec;--surface:#fff;--accent:#2b4ed4}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1525;--fg:#e8ecf7;--muted:#9ba7c5;--line:#293857;--surface:#162037;--accent:#8199ff}}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 system-ui,"Segoe UI",Tahoma,Arial,sans-serif;padding:16px}
+main{max-width:760px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+h1{font-size:24px;margin:.2em 0}h2{font-size:18px;margin:1.4em 0 .3em}
+a{color:var(--accent)}.muted{color:var(--muted);font-size:14px}
+.sw{display:flex;gap:8px;margin-bottom:12px}.sw button{border:1px solid var(--line);background:none;color:var(--fg);border-radius:99px;padding:6px 16px;cursor:pointer;font:inherit}
+.sw button[aria-pressed=true]{background:var(--accent);color:#fff;border-color:var(--accent)}
+[lang=ar]{direction:rtl;text-align:right}
+.todo{background:#fff3cd;color:#664d03;padding:1px 6px;border-radius:4px}
+section[hidden]{display:none}
+</style>
+</head>
+<body><main>
+<div class="sw"><button type="button" data-l="fr" aria-pressed="true">Français</button><button type="button" data-l="ar" aria-pressed="false">العربية</button></div>
+<section lang="fr">
+<h1>Supprimer votre compte Syndic</h1>
+<p class="muted">Application : Syndic (gestion de syndic) — Éditeur : Badr Chattahy</p>
+<h2>Depuis l'application (le plus rapide)</h2>
+<ol><li>Ouvrez l'application et connectez-vous.</li><li>Allez dans <b>Paramètres → Compte et synchronisation</b>.</li><li>Touchez <b>« Supprimer le compte définitivement »</b> et confirmez avec votre mot de passe.</li></ol>
+<h2>Si vous ne pouvez plus ouvrir l'application</h2>
+<p>Envoyez un e-mail à <span class="todo">[ADRESSE E-MAIL DE CONTACT]</span> depuis l'adresse du compte, avec l'objet « Suppression de compte Syndic ». Nous supprimons le compte sous 30 jours maximum.</p>
+<h2>Données supprimées</h2>
+<p>Votre compte (e-mail, identifiant), tous vos contenus (immeuble, propriétaires, cotisations, paiements, dépenses, paramètres) et toutes les sauvegardes cloud. Une copie locale éventuelle reste sur votre téléphone jusqu'à désinstallation ou déconnexion.</p>
+<p><a href="privacy.html">← Politique de confidentialité</a></p>
+</section>
+<section lang="ar" hidden>
+<h1>حذف حسابك في السانديك</h1>
+<p class="muted">التطبيق: السانديك (تسيير الملكية المشتركة) — الناشر: Badr Chattahy</p>
+<h2>من داخل التطبيق (الأسرع)</h2>
+<ol><li>افتح التطبيق وسجّل الدخول.</li><li>اذهب إلى <b>الإعدادات ← الحساب والمزامنة</b>.</li><li>اضغط <b>«حذف الحساب نهائياً»</b> وأكّد بكلمة السر.</li></ol>
+<h2>إن لم تعد قادراً على فتح التطبيق</h2>
+<p>أرسل رسالة إلى <span class="todo">[البريد الإلكتروني للتواصل]</span> من بريد الحساب نفسه بعنوان «حذف حساب السانديك». نحذف الحساب خلال 30 يوماً كحد أقصى.</p>
+<h2>البيانات المحذوفة</h2>
+<p>حسابك (البريد والمعرّف) وكل محتواك (العمارة، الملاك، الاشتراكات، الدفعات، المصاريف، الإعدادات) وكل النسخ الاحتياطية السحابية. وقد تبقى نسخة محلية على هاتفك حتى إلغاء التثبيت أو تسجيل الخروج.</p>
+<p><a href="privacy.html?lang=ar">← سياسة الخصوصية</a></p>
+</section>
+</main>
+<script>
+(function(){var b=document.querySelectorAll('.sw button'),s=document.querySelectorAll('main section[lang]');
+function set(l){s.forEach(function(x){x.hidden=x.lang!==l});b.forEach(function(y){y.setAttribute('aria-pressed',String(y.dataset.l===l))});document.documentElement.lang=l;}
+b.forEach(function(y){y.addEventListener('click',function(){set(y.dataset.l)})});
+var q=(location.search.match(/lang=(fr|ar)/)||[])[1]||(location.hash==='#ar'?'ar':null)||((navigator.language||'').indexOf('ar')===0?'ar':'fr');set(q);})();
+</script>
+</body></html>
