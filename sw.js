@@ -1,6 +1,6 @@
 // Offline shell: app files + Firebase SDK modules + fonts are cached after first load.
 // Stale-while-revalidate, so updates published to hosting reach users on the next open.
-const CACHE = 'syndic-shell-v3';
+const CACHE = 'syndic-shell-v4';
 const SHELL = ['./', 'index.html', 'cloud.js', 'i18n-fr.js', 'privacy.html', 'delete-account.html', 'firebase-config.js', 'manifest.webmanifest',
   'icon-192.png', 'icon-512.png', 'maskable-512.png'];
 const EXTRA_HOSTS = ['www.gstatic.com', 'fonts.googleapis.com', 'fonts.gstatic.com'];

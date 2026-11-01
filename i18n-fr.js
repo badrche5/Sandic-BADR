@@ -10,9 +10,10 @@
   var AR='\\u0600-\\u06FF', arRe=/[\u0600-\u06FF]/;
   var keys=Object.keys(D).sort(function(a,b){return b.length-a.length;});
   var esc=function(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');};
-  var re=new RegExp(keys.map(function(k){
-    var f=arRe.test(k.charAt(0))?'(?<!['+AR+'])':'', l=arRe.test(k.charAt(k.length-1))?'(?!['+AR+'])':'';
-    return f+esc(k)+l;}).join('|'),'g');
+  var mk=function(lb){return new RegExp(keys.map(function(k){
+    var f=(lb&&arRe.test(k.charAt(0)))?'(?<!['+AR+'])':'', l=arRe.test(k.charAt(k.length-1))?'(?!['+AR+'])':'';
+    return f+esc(k)+l;}).join('|'),'g');};
+  var re; try{ re=mk(true); }catch(e){ re=mk(false); } /* دعم المتصفحات القديمة التي لا تعرف lookbehind */
   var tr=function(s){s=String(s);return arRe.test(s)?s.replace(re,function(m){return D[m];}).replace(/\u060C/g,',').replace(/\u061F/g,'?'):s;};
   window.trFr=tr;
   document.documentElement.lang='fr'; document.documentElement.dir='ltr';

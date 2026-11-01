@@ -11,6 +11,7 @@ function disabled(reason) {
   window.dispatchEvent(new CustomEvent('cloud-ready'));
 }
 
+(async () => {
 if (!configured) {
   disabled('not-configured');
 } else {
@@ -81,6 +82,7 @@ if (!configured) {
         const s = await fsM.getDoc(mainRef(uidOrThrow()));
         return s.exists() ? s.data() : null;
       },
+      plan: async () => { const s = await fsM.getDoc(fsM.doc(db, 'users', uidOrThrow(), 'meta', 'plan')); return s.exists() ? s.data() : null; },
       save: (payload) => fsM.setDoc(mainRef(uidOrThrow()), payload),
       watch: (cb) => {
         const uid = uidOrThrow();
@@ -113,3 +115,4 @@ if (!configured) {
     disabled('init-failed');
   }
 }
+})();

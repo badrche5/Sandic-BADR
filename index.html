@@ -258,7 +258,7 @@ html[lang=fr] .lang-sw{direction:ltr}
       <button class="btn ghost" type="button" data-act="authReset">نسيت كلمة السر؟</button>
       <div class="or">أو</div>
       <button class="btn sec" type="button" data-act="authGoogle">المتابعة عبر Google</button>
-      <p class="muted small" style="margin:6px 0 0">بياناتك مرتبطة بحسابك وحده ولا يراها أحد غيرك. <a href="privacy.html" target="_blank" rel="noopener" style="color:var(--accent)">سياسة الخصوصية</a></p>
+      <p class="muted small" style="margin:6px 0 0">بياناتك مرتبطة بحسابك وحده ولا يراها أحد غيرك. <a href="https://badrche5.github.io/Sandic-BADR/privacy.html" target="_blank" rel="noopener" style="color:var(--accent)">سياسة الخصوصية</a></p>
       <button class="lang-sw" type="button" data-notr data-act="langToggle">Français / العربية</button>
     </div>
   </div>
@@ -466,17 +466,47 @@ async function authReset(){
   catch(e){msg.textContent=authErr(e);}
 }
 
+
+/* ---------- plan (free / premium) ---------- */
+const PAYWALL_FROM='2027-11-01';                /* قبل هذا التاريخ كل شيء مجاني للجميع؛ غيّره أو اجعله '2000-01-01' لتفعيل الحدود فوراً */
+const FREE_MAX_OWNERS=20;                       /* حد النسخة المجانية: عدد الشقق */
+const PLAN_CONTACT='sandik.app.support@gmail.com';
+let PLAN={plan:'free',until:null};
+function limitsActive(){return new Date()>=new Date(PAYWALL_FROM+'T00:00:00');}
+function isPremium(){
+  if(!limitsActive()) return true;
+  if(PLAN.plan!=='premium') return false;
+  if(!PLAN.until) return true;
+  return new Date(PLAN.until+'T23:59:59')>=new Date();
+}
+async function loadPlan(u){
+  const c=cloudApi(), k='sandik_plan_'+(u&&u.uid);
+  try{ const d=c&&await c.plan(); PLAN=d&&d.plan?{plan:String(d.plan),until:d.until||null}:{plan:'free',until:null}; try{localStorage.setItem(k,JSON.stringify(PLAN));}catch(e){} }
+  catch(e){ try{ const x=JSON.parse(localStorage.getItem(k)||'null'); if(x) PLAN=x; }catch(_){} }
+}
+function openUpgrade(why){
+  const em=user&&user.email?user.email:'';
+  openModal('⭐ الترقية إلى Premium',
+   '<p style="margin:0 0 10px">'+esc(why||'')+'</p>'+
+   '<div class="hint" style="padding:12px;border-radius:12px;background:var(--ok-soft);color:var(--ok);margin-bottom:10px;line-height:1.9">✔ شقق غير محدودة<br>✔ تقارير PDF للسكان<br>✔ دعم ذو أولوية</div>'+
+   '<p class="muted small" style="margin:0 0 6px">للاشتراك، راسلنا على البريد التالي مع ذكر بريد حسابك، وسنفعّل الاشتراك بعد الدفع:</p>'+
+   '<p class="num" style="direction:ltr;margin:0 0 4px"><b>'+PLAN_CONTACT+'</b></p>'+
+   (em?'<p class="muted small num" style="direction:ltr;margin:0">'+esc(em)+'</p>':''),
+   [{label:'مراسلة عبر البريد',fn:()=>{location.href='mailto:'+PLAN_CONTACT+'?subject='+encodeURIComponent('Premium - تفعيل الاشتراك')+'&body='+encodeURIComponent('بريد حسابي: '+em);}},
+    {label:'إغلاق',cls:'ghost',fn:()=>closeModal()}]);
+}
+
 async function boot(){
   if(!window.cloud) await new Promise(r=>window.addEventListener('cloud-ready',r,{once:true}));
   const c=cloudApi();
   if(!c){ await loadLocal(); return; }
   await c.redirectResult();
   c.onAuth(async u=>{
-    if(u){ showAuth(false); await enter(u); }
+    if(u){ showAuth(false); await enter(u); loadPlan(u).then(()=>{try{render();}catch(e){}}); }
     else { user=null; cloudOn=false; ready=false; stopWatch(); showAuth(true); $('#app').classList.remove('loading'); }
   });
 }
-setTimeout(()=>{ if(!window.cloud&&!ready){ loadLocal(); } },15000);
+setTimeout(()=>{ if(!window.cloud&&!ready){ loadLocal(); try{toast('تعذّر تشغيل الحساب السحابي على هذا الهاتف. حدّث Chrome و Android System WebView من Play Store ثم أعد فتح التطبيق');}catch(e){} } },15000);
 
 /* ---------- account settings ---------- */
 async function syncNow(){
@@ -490,6 +520,7 @@ function accountCard(){
   if(!c||!user) return '<div class="card"><div class="sec-h"><h2>الحساب والمزامنة</h2><span class="pill warn">محلي فقط</span></div><p class="muted small" style="margin:0">المزامنة السحابية غير مفعّلة. بياناتك محفوظة على هذا الجهاز فقط، فاحرص على النسخ الاحتياطي. (للمطوّر: عبّئ ملف firebase-config.js)</p></div>';
   const verified=user.emailVerified||c.providerIds().indexOf('password')<0;
   return '<div class="card" id="cloudCard"><div class="sec-h"><h2>الحساب والمزامنة</h2><span class="pill ok">☁️ نشط</span></div>'+
+    '<div class="row between" style="margin-bottom:6px"><span class="muted">الخطة:</span>'+(!limitsActive()&&PLAN.plan!=='premium'?'<span class="pill ok">مجانية كاملة حالياً</span>':isPremium()?'<span class="pill ok">⭐ Premium'+(PLAN.until?' حتى '+esc(PLAN.until):'')+'</span>':'<button class="btn small" type="button" data-act="upgrade">⭐ ترقية</button>')+'</div>'+
     '<div class="row between" style="margin-bottom:6px"><span class="muted">الحساب:</span><b class="num" style="direction:ltr">'+esc(user.email||'')+'</b></div>'+
     (verified?'':'<div class="row between" style="background:var(--warn-soft);padding:8px 12px;border-radius:8px;margin-bottom:8px"><span style="color:var(--warn)">البريد غير مؤكَّد — أكّده لتتمكن من استعادة حسابك بأمان</span><button class="btn small sec" type="button" data-act="resendVerify">إعادة إرسال رسالة التأكيد</button></div>')+
     '<p class="muted small" style="margin:0 0 10px">كل ما تضيفه يُحفظ سحابياً في حسابك فقط. إذا ضاع هاتفك أو تعطّل: ثبّت التطبيق على هاتف جديد وسجّل الدخول بنفس الحساب لتعود كل بياناتك فوراً. تحتفظ السحابة أيضاً بنسخة احتياطية يومية لآخر 30 يوماً.</p>'+
@@ -1018,7 +1049,7 @@ function viewSettings(){
    categoriesCard()+cloudCard()+lockCard()+'<div class="card"><div class="sec-h"><h2>نسخة احتياطية</h2></div><p class="muted small" style="margin:0 0 10px">احفظ نسخة من كل بياناتك في ملف، واستعدها عند الحاجة.</p>'+
     '<div class="row"><button class="btn" type="button" data-act="export">تنزيل نسخة احتياطية</button><label class="btn sec" for="importFile" style="cursor:pointer">استرجاع من ملف</label><input id="importFile" type="file" accept=".json,application/json" hidden></div></div>'+
    '<div class="card"><div class="sec-h"><h2>مسح كل البيانات</h2></div><p class="muted small" style="margin:0 0 10px">يحذف الملاك والاشتراكات والمصاريف نهائياً.</p><button class="btn danger" type="button" data-act="wipe">مسح كل شيء</button></div>'+
-   '<div class="card" style="text-align:center"><div class="sec-h" style="justify-content:center"><h2>عن التطبيق</h2></div><p class="small" style="margin:0 0 8px"><a href="privacy.html" target="_blank" rel="noopener" style="color:var(--accent)">سياسة الخصوصية</a> · <a href="delete-account.html" target="_blank" rel="noopener" style="color:var(--accent)">حذف الحساب</a></p><p class="muted small" style="margin:0">تطبيق تسيير السانديك: ملاك، اشتراكات، مصاريف، وتقارير جاهزة للسكان.</p><div class="sig"><span class="mono" aria-hidden="true">BC</span><span class="t"><small>تصميم وتطوير</small><b>Badr Chattahy</b><i>© 2026 · الإصدار 1.3</i></span></div></div>'+
+   '<div class="card" style="text-align:center"><div class="sec-h" style="justify-content:center"><h2>عن التطبيق</h2></div><p class="small" style="margin:0 0 8px"><a href="https://badrche5.github.io/Sandic-BADR/privacy.html" target="_blank" rel="noopener" style="color:var(--accent)">سياسة الخصوصية</a> · <a href="https://badrche5.github.io/Sandic-BADR/delete-account.html" target="_blank" rel="noopener" style="color:var(--accent)">حذف الحساب</a></p><p class="muted small" style="margin:0">تطبيق تسيير السانديك: ملاك، اشتراكات، مصاريف، وتقارير جاهزة للسكان.</p><div class="sig"><span class="mono" aria-hidden="true">BC</span><span class="t"><small>تصميم وتطوير</small><b>Badr Chattahy</b><i>© 2026 · الإصدار 1.3</i></span></div></div>'+
   '</div>';
 }
 
@@ -1046,6 +1077,7 @@ function ownerForm(o){
    '<div class="field"><label for="o_fee">واجب شهري خاص (اتركه 0 لاستعمال الواجب الافتراضي '+fmt(S.fee)+' '+CUR()+')</label><input id="o_fee" type="number" inputmode="decimal" min="0" step="any" value="'+(o.fee||0)+'"></div>';
 }
 function openOwner(o){
+  if(!o&&!isPremium()&&S.owners.length>=FREE_MAX_OWNERS){openUpgrade('النسخة المجانية تتسع لـ '+FREE_MAX_OWNERS+' شقة. للمزيد رقِّ حسابك إلى Premium.');return;}
   openModal(o?'تعديل المالك':'إضافة مالك',ownerForm(o),[
     {label:'حفظ',fn:()=>{
       if(!val('o_apt')&&!val('o_name')){toast('أدخل رقم الشقة أو اسم المالك');return;}
@@ -1525,6 +1557,7 @@ function openPdfPreviewModal(name, dataUrl, blob) {
 }
 
 async function deliverPdf(a, b, share) {
+  if(!isPremium()){openUpgrade('تقارير PDF للسكان متاحة في نسخة Premium.');return;}
   toast('جارٍ إنشاء تقرير PDF…');
   let blob;
   try {
@@ -1706,9 +1739,10 @@ document.addEventListener('click',async ev=>{
     case 'saveSettings':
       S.name=val('s_name')||'السانديك';S.city=val('s_city');S.fee=Math.max(0,numv('s_fee'));S.opening=numv('s_open');S.demo=false;S.cur=val('s_cur').replace(/[<>&"'`]/g,'').slice(0,10)||'درهم';S.cc=val('s_cc').replace(/\D/g,'').slice(0,4)||'212';S.ml=MSETS[val('s_ml')]?val('s_ml'):'fr';applyLocale();
       save();render();toast('تم الحفظ');break;
+    case 'upgrade':openUpgrade('اشترك للحصول على كل المزايا بلا حدود.');break;
     case 'copyReport':copy(reportText());break;
     case 'export':{
-      const json=JSON.stringify(S,null,1),fn='sandik-'+(S.name||'backup').replace(/[^\p{L}\p{N}]+/gu,'-')+'-'+today()+'.json';
+      const json=JSON.stringify(S,null,1),fn='sandik-'+(S.name||'backup').replace(/[^A-Za-z0-9À-ɏ؀-ۿ]+/g,'-')+'-'+today()+'.json';
       try{const bl=new Blob([json],{type:'application/json'}),u=URL.createObjectURL(bl),a=document.createElement('a');
         a.href=u;a.download=fn;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(u);a.remove();},4000);toast('تم تجهيز النسخة الاحتياطية');
       }catch(e){await copy(json);}
